@@ -25,6 +25,14 @@ def fahrenheitToCelsius(f):
 # not sure what the correct encoding is. it seems TAPR has set utf-8 as a standard, but not everybody is following it.
 encoding = "utf-8"
 
+
+def aprs_info_str(data_field):
+    """Decode AX.25 information field bytes for TNC2 / text parsing."""
+    if isinstance(data_field, str):
+        return data_field
+    return bytes(data_field).decode(encoding, "replace")
+
+
 # regex for altitute in comment field
 altitudeRegex = re.compile("(^.*)\\/A=([0-9]{6})(.*$)")
 
@@ -163,7 +171,7 @@ class Ax25Parser(PickleModule):
                 "destination": self.extractCallsign(ax25frame[0:7]),
                 "source": self.extractCallsign(ax25frame[7:14]),
                 "path": [self.extractCallsign(c, True) for c in chunks(ax25frame[14:control_pid], 7)],
-                "data": ax25frame[control_pid + 2 :],
+                "data": bytes(ax25frame[control_pid + 2 :]),
                 "raw": "".join("{:02X}".format(x) for x in ax25frame)
             }
         except (ValueError, IndexError):
@@ -409,7 +417,7 @@ class AprsParser(PickleModule):
             aprsData.update(MicEParser().parse(data))
             return aprsData
 
-        information = information.decode(encoding, "replace")
+        information = aprs_info_str(information)
 
         # APRS data type identifier
         dti = information[0]

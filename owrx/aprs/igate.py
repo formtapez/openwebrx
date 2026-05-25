@@ -1,5 +1,5 @@
 from owrx.config import Config
-from owrx.aprs import encoding
+from owrx.aprs import aprs_info_str
 from owrx.version import openwebrx_version
 import logging
 import queue
@@ -19,9 +19,7 @@ def build_tnc2_line(data):
     source = data.get("source", "")
     destination = data.get("destination", "")
     path = data.get("path") or []
-    info = data.get("data", b"")
-    if isinstance(info, bytes):
-        info = info.decode(encoding, "replace")
+    info = aprs_info_str(data.get("data", b""))
 
     path_parts = []
     if destination:
